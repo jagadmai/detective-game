@@ -28,7 +28,7 @@ window.innerWidth/window.innerHeight,
 1000
 )
 
-camera.position.set(0,1.8,8)
+camera.position.set(0,1.8,10)
 
 renderer=new THREE.WebGLRenderer({antialias:true})
 renderer.setSize(window.innerWidth,window.innerHeight)
@@ -38,25 +38,39 @@ const ambient=new THREE.AmbientLight(0xffffff,0.4)
 scene.add(ambient)
 
 const light=new THREE.PointLight(0xffffff,2)
-light.position.set(0,5,5)
+light.position.set(0,6,0)
 scene.add(light)
 
+/* FLOOR */
+
 const floor=new THREE.Mesh(
-new THREE.PlaneGeometry(50,50),
+new THREE.PlaneGeometry(60,60),
 new THREE.MeshStandardMaterial({color:0x1a1a1a})
 )
 
 floor.rotation.x=-Math.PI/2
 scene.add(floor)
 
-createWall(0,-25,0)
-createWall(0,25,0)
-createWall(-25,0,Math.PI/2)
-createWall(25,0,Math.PI/2)
+/* HOUSE ROOMS */
 
-createClue(0,1,"Suspicious Note")
-createClue(-3,1,"Bloody Knife")
-createClue(3,1,"Victim Phone")
+createRoom(0,0)
+createRoom(12,0)
+createRoom(-12,0)
+
+/* FURNITURE */
+
+createTable(0,0)
+createTable(12,0)
+createTable(-12,0)
+
+/* CLUES */
+
+createClue(0,0,"Victim Note")
+createClue(12,0,"Bloody Knife")
+createClue(-12,0,"Broken Phone")
+createClue(-12,2,"Mysterious Key")
+
+/* INPUT */
 
 document.addEventListener("keydown",e=>keys[e.key.toLowerCase()]=true)
 document.addEventListener("keyup",e=>keys[e.key.toLowerCase()]=false)
@@ -66,28 +80,62 @@ document.addEventListener("click",interact)
 
 }
 
-function createWall(x,z,r){
+/* ROOM CREATOR */
+
+function createRoom(x,z){
+
+let wallMat=new THREE.MeshStandardMaterial({color:0x444444})
+
+let walls=[
+
+[0,-6,0],
+[0,6,0],
+[-6,0,Math.PI/2],
+[6,0,Math.PI/2]
+
+]
+
+walls.forEach(w=>{
 
 let wall=new THREE.Mesh(
-new THREE.BoxGeometry(50,8,1),
-new THREE.MeshStandardMaterial({color:0x444444})
+new THREE.BoxGeometry(12,6,1),
+wallMat
 )
 
-wall.position.set(x,4,z)
-wall.rotation.y=r
+wall.position.set(x+w[0],3,z+w[1])
+wall.rotation.y=w[2]
 
 scene.add(wall)
 
+})
+
 }
+
+/* TABLE */
+
+function createTable(x,z){
+
+let table=new THREE.Mesh(
+new THREE.BoxGeometry(2,1,2),
+new THREE.MeshStandardMaterial({color:0x6b4a2f})
+)
+
+table.position.set(x,0.5,z)
+
+scene.add(table)
+
+}
+
+/* CLUES */
 
 function createClue(x,z,name){
 
 let obj=new THREE.Mesh(
-new THREE.BoxGeometry(0.5,0.2,0.5),
+new THREE.BoxGeometry(0.4,0.2,0.4),
 new THREE.MeshStandardMaterial({color:0xffd966})
 )
 
-obj.position.set(x,0.5,z)
+obj.position.set(x,1.2,z)
 
 obj.userData.name=name
 
@@ -95,6 +143,8 @@ scene.add(obj)
 objects.push(obj)
 
 }
+
+/* MOUSE LOOK */
 
 function look(e){
 
@@ -109,6 +159,8 @@ camera.rotation.x=pitch
 
 }
 
+/* MOVEMENT */
+
 function move(){
 
 let speed=0.15
@@ -119,12 +171,14 @@ camera.getWorldDirection(forward)
 let right=new THREE.Vector3()
 right.crossVectors(camera.up,forward)
 
-if(keys["w"]) camera.position.add(forward.multiplyScalar(speed))
-if(keys["s"]) camera.position.add(forward.multiplyScalar(-speed))
-if(keys["a"]) camera.position.add(right.multiplyScalar(speed))
-if(keys["d"]) camera.position.add(right.multiplyScalar(-speed))
+if(keys["w"]) camera.position.add(forward.clone().multiplyScalar(speed))
+if(keys["s"]) camera.position.add(forward.clone().multiplyScalar(-speed))
+if(keys["a"]) camera.position.add(right.clone().multiplyScalar(speed))
+if(keys["d"]) camera.position.add(right.clone().multiplyScalar(-speed))
 
 }
+
+/* CLUE INTERACTION */
 
 function interact(){
 
@@ -152,6 +206,8 @@ document.getElementById("evidenceList").appendChild(li)
 }
 
 }
+
+/* GAME LOOP */
 
 function animate(){
 
