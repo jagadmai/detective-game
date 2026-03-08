@@ -6,6 +6,8 @@ let evidence=[]
 let yaw=0
 let pitch=0
 
+const PLAYER_HEIGHT = 1.8
+
 function startGame(){
 
 document.getElementById("menu").style.display="none"
@@ -21,6 +23,10 @@ function init(){
 
 scene=new THREE.Scene()
 
+/* SKY COLOR (background) */
+
+scene.background = new THREE.Color(0xaec6cf)
+
 camera=new THREE.PerspectiveCamera(
 75,
 window.innerWidth/window.innerHeight,
@@ -28,36 +34,38 @@ window.innerWidth/window.innerHeight,
 1000
 )
 
-camera.position.set(0,1.8,10)
+camera.position.set(0,PLAYER_HEIGHT,8)
 
 renderer=new THREE.WebGLRenderer({antialias:true})
 renderer.setSize(window.innerWidth,window.innerHeight)
 document.body.appendChild(renderer.domElement)
 
-const ambient=new THREE.AmbientLight(0xffffff,0.4)
+/* LIGHTING */
+
+const ambient=new THREE.AmbientLight(0xffffff,0.6)
 scene.add(ambient)
 
-const light=new THREE.PointLight(0xffffff,2)
+const light=new THREE.PointLight(0xffffff,1.5)
 light.position.set(0,6,0)
 scene.add(light)
 
-/* FLOOR */
+/* FLOOR (WOOD STYLE) */
 
 const floor=new THREE.Mesh(
-new THREE.PlaneGeometry(60,60),
-new THREE.MeshStandardMaterial({color:0x1a1a1a})
+new THREE.PlaneGeometry(80,80),
+new THREE.MeshStandardMaterial({color:0x8b5a2b})
 )
 
 floor.rotation.x=-Math.PI/2
 scene.add(floor)
 
-/* HOUSE ROOMS */
+/* ROOMS */
 
 createRoom(0,0)
 createRoom(12,0)
 createRoom(-12,0)
 
-/* FURNITURE */
+/* TABLES */
 
 createTable(0,0)
 createTable(12,0)
@@ -84,7 +92,7 @@ document.addEventListener("click",interact)
 
 function createRoom(x,z){
 
-let wallMat=new THREE.MeshStandardMaterial({color:0x444444})
+let wallMat=new THREE.MeshStandardMaterial({color:0xf5f5f5})
 
 let walls=[
 
@@ -98,7 +106,7 @@ let walls=[
 walls.forEach(w=>{
 
 let wall=new THREE.Mesh(
-new THREE.BoxGeometry(12,6,1),
+new THREE.BoxGeometry(12,6,0.5),
 wallMat
 )
 
@@ -126,7 +134,7 @@ scene.add(table)
 
 }
 
-/* CLUES */
+/* CLUE */
 
 function createClue(x,z,name){
 
@@ -175,6 +183,10 @@ if(keys["w"]) camera.position.add(forward.clone().multiplyScalar(speed))
 if(keys["s"]) camera.position.add(forward.clone().multiplyScalar(-speed))
 if(keys["a"]) camera.position.add(right.clone().multiplyScalar(speed))
 if(keys["d"]) camera.position.add(right.clone().multiplyScalar(-speed))
+
+/* LOCK PLAYER TO FLOOR */
+
+camera.position.y = PLAYER_HEIGHT
 
 }
 
