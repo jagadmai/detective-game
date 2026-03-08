@@ -1,37 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
 <meta charset="UTF-8">
-<title>Detective Investigation</title>
-
+<title>Detective Mystery</title>
 <link rel="stylesheet" href="style.css">
 
-<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
 </head>
 
 <body>
 
 <div id="menu">
-<h1>DETECTIVE CASE</h1>
-<button onclick="startGame()">START INVESTIGATION</button>
+<h1>Detective Mystery</h1>
+<p>Explore the house and find clues</p>
+<button id="startBtn">Start Game</button>
 </div>
 
-<div id="hud">
-WASD = Move<br>
-Mouse = Look<br>
-Click = Inspect
-</div>
+<div id="cluePopup"></div>
 
-<div id="evidence">
-<b>Evidence</b>
-<ul id="evidenceList"></ul>
-</div>
-
-<div id="crosshair"></div>
-
-<script src="game.js"></script>
+<script src="main.js"></script>
 
 </body>
 </html>
