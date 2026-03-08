@@ -19,7 +19,6 @@ border-radius:20px;
 
 #menu h1{
 font-size:50px;
-margin-bottom:10px;
 }
 
 #menu button{
@@ -29,10 +28,6 @@ border:none;
 border-radius:10px;
 background:#ffcc00;
 cursor:pointer;
-}
-
-#menu button:hover{
-background:#ffaa00;
 }
 
 #clueBox{
