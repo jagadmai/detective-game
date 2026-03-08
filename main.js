@@ -1,40 +1,71 @@
-let scene,camera,renderer;
-let player;
-let clues=[];
+let scene, camera, renderer;
+
+let player = {
+x:0,
+z:5,
+speed:0.15
+};
+
 let keys={};
+
+let clues=[];
+let nearClue=null;
 
 function init(){
 
-scene=new THREE.Scene();
+scene = new THREE.Scene();
+scene.background = new THREE.Color(0x202020);
 
-camera=new THREE.PerspectiveCamera(
+
+
+camera = new THREE.PerspectiveCamera(
 75,
 window.innerWidth/window.innerHeight,
 0.1,
 1000
 );
 
-renderer=new THREE.WebGLRenderer();
+camera.position.set(0,1.7,5);
+
+
+
+renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(window.innerWidth,window.innerHeight);
+
 document.body.appendChild(renderer.domElement);
 
 
 
-/* LIGHT */
+/* LIGHTING */
 
-const light=new THREE.PointLight(0xffffff,1);
-light.position.set(5,10,5);
+const light = new THREE.PointLight(0xffffff,1,30);
+light.position.set(0,5,0);
 scene.add(light);
+
+
+
+/* TEXTURES */
+
+const loader = new THREE.TextureLoader();
+
+const floorTex = loader.load("floor.jpg");
+floorTex.wrapS = floorTex.wrapT = THREE.RepeatWrapping;
+floorTex.repeat.set(10,10);
+
+const wallTex = loader.load("wall.jpg");
+wallTex.wrapS = wallTex.wrapT = THREE.RepeatWrapping;
 
 
 
 /* FLOOR */
 
-const floorGeo=new THREE.PlaneGeometry(30,30);
-const floorMat=new THREE.MeshStandardMaterial({color:0x444444});
-const floor=new THREE.Mesh(floorGeo,floorMat);
+const floorGeo = new THREE.PlaneGeometry(40,40);
+const floorMat = new THREE.MeshStandardMaterial({map:floorTex});
 
-floor.rotation.x=-Math.PI/2;
+const floor = new THREE.Mesh(floorGeo,floorMat);
+
+floor.rotation.x = -Math.PI/2;
+
 scene.add(floor);
 
 
@@ -43,61 +74,58 @@ scene.add(floor);
 
 function wall(x,z,rot){
 
-const geo=new THREE.BoxGeometry(30,5,1);
-const mat=new THREE.MeshStandardMaterial({color:0x999999});
+const geo = new THREE.BoxGeometry(40,5,1);
+const mat = new THREE.MeshStandardMaterial({map:wallTex});
 
-const w=new THREE.Mesh(geo,mat);
+const w = new THREE.Mesh(geo,mat);
 
 w.position.set(x,2.5,z);
-w.rotation.y=rot;
+w.rotation.y = rot;
 
 scene.add(w);
 
 }
 
-wall(0,-15,0);
-wall(0,15,0);
-wall(-15,0,Math.PI/2);
-wall(15,0,Math.PI/2);
-
-
-
-/* PLAYER */
-
-player=new THREE.Object3D();
-scene.add(player);
-
-camera.position.set(0,1.7,0);
-player.add(camera);
+wall(0,-20,0);
+wall(0,20,0);
+wall(-20,0,Math.PI/2);
+wall(20,0,Math.PI/2);
 
 
 
 /* CLUES */
 
-createClue(-5,0,"A bloody knife...");
-createClue(5,5,"A strange note...");
-createClue(0,-5,"Footprints on the floor...");
+createClue(3,3,"A bloody knife...");
+createClue(-4,2,"A strange letter...");
+createClue(0,-3,"Footprints...");
 
 
 
 animate();
+
 }
 
 
 
 function createClue(x,z,text){
 
-const geo=new THREE.BoxGeometry(1,1,1);
-const mat=new THREE.MeshStandardMaterial({color:0xff0000});
+const geo = new THREE.BoxGeometry(0.6,0.6,0.6);
 
-const cube=new THREE.Mesh(geo,mat);
+const mat = new THREE.MeshStandardMaterial({
+color:0xff0000,
+emissive:0x550000
+});
 
-cube.position.set(x,0.5,z);
-cube.userData.text=text;
+const cube = new THREE.Mesh(geo,mat);
+
+cube.position.set(x,0.3,z);
+
+cube.userData.text = text;
 
 scene.add(cube);
 
 clues.push(cube);
+
 }
 
 
@@ -116,18 +144,18 @@ renderer.render(scene,camera);
 
 function movePlayer(){
 
-const speed=0.1;
+if(keys["ArrowUp"]) player.z -= player.speed;
+if(keys["ArrowDown"]) player.z += player.speed;
 
-if(keys["ArrowUp"]) player.position.z-=speed;
-if(keys["ArrowDown"]) player.position.z+=speed;
-if(keys["ArrowLeft"]) player.position.x-=speed;
-if(keys["ArrowRight"]) player.position.x+=speed;
+if(keys["ArrowLeft"]) player.x -= player.speed;
+if(keys["ArrowRight"]) player.x += player.speed;
 
-camera.lookAt(
-player.position.x,
-1.7,
-player.position.z-5
-);
+
+
+camera.position.x = player.x;
+camera.position.z = player.z;
+
+
 
 checkClues();
 
@@ -137,32 +165,22 @@ checkClues();
 
 function checkClues(){
 
+nearClue = null;
+
 clues.forEach(clue=>{
 
-const dist=player.position.distanceTo(clue.position);
+let dist = Math.sqrt(
+(player.x - clue.position.x)**2 +
+(player.z - clue.position.z)**2
+);
 
-if(dist<2){
+if(dist < 2){
 
-showClue(clue.userData.text);
+nearClue = clue;
 
 }
 
 });
-
-}
-
-
-
-function showClue(text){
-
-const popup=document.getElementById("cluePopup");
-
-popup.innerText=text;
-popup.style.display="block";
-
-setTimeout(()=>{
-popup.style.display="none";
-},2000);
 
 }
 
@@ -172,13 +190,35 @@ window.addEventListener("keydown",e=>{
 
 keys[e.key]=true;
 
+if(e.key==="e" && nearClue){
+
+showClue(nearClue.userData.text);
+
+}
+
 });
+
+
 
 window.addEventListener("keyup",e=>{
-
 keys[e.key]=false;
-
 });
+
+
+
+function showClue(text){
+
+const box = document.getElementById("clueBox");
+
+box.innerText = text;
+
+box.style.display="block";
+
+setTimeout(()=>{
+box.style.display="none";
+},3000);
+
+}
 
 
 
